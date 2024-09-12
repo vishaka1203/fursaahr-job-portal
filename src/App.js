@@ -4,7 +4,7 @@ import Branches from './Pages/branches';
 import AppInfo from './Pages/appInfo';
 import Invoices from './Pages/invoices';
 import AllWorkers from './Pages/allWorkers';
-import AllRequests from './Pages/allRequests';
+// import AllRequests from './Pages/allRequests';
 import AllCategories from './Pages/allCategories';
 import AllSubCategories from './Pages/allSubCategories';
 import Loginform from './Pages/loginForm';
@@ -17,7 +17,7 @@ function App() {
         <Route path="/login" element={<Loginform />} />
         <Route path="/invoices" exact element={<Invoices />}></Route>
         <Route path="/allWorkers" exact element={<AllWorkers />}></Route>
-        <Route path="/allRequests" exact element={<AllRequests />}></Route>
+        {/* <Route path="/allRequests" exact element={<AllRequests />}></Route> */}
         <Route path="/allCategories" exact element={<AllCategories />}></Route>
         <Route
           path="/allSubCategories"

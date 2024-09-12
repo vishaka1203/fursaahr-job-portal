@@ -1,19 +1,22 @@
 import React from 'react';
 import Sidenav from '../Components/Sidenav';
+import Navbar from '../Components/Navbar';
 import Box from '@mui/material/Box';
-import Navbar from './../Components/Navbar';
-
-const invoices = () => {
+import InvoiceList from '../Pages/invoices/invoicesList';
+const Invoices = () => {
   return (
     <>
-      <Navbar />
-      <Box sx={{ display: 'flex' }}>
-        <Sidenav />
-        <h1> invoices</h1>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
-      </Box>
+      <div className="bgcolor">
+        <Navbar />
+        <Box sx={{ display: 'flex' }}>
+          <Sidenav />
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <InvoiceList />
+          </Box>
+        </Box>
+      </div>
     </>
   );
 };
 
-export default invoices;
+export default Invoices;

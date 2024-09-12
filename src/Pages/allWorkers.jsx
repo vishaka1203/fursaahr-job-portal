@@ -1,19 +1,24 @@
 import React from 'react';
 import Sidenav from '../Components/Sidenav';
-import Box from '@mui/material/Box';
 import Navbar from '../Components/Navbar';
+import Box from '@mui/material/Box';
+import AllWorkersList from './AllWorkers/allWorkersList';
 
-const allWorkers = () => {
+const AllWorkers = () => {
   return (
     <>
-      <Navbar />
-      <Box sx={{ display: 'flex' }}>
-        <Sidenav />
-        <h1>allWorkers </h1>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
-      </Box>
+      <div className="bgcolor">
+        <Navbar />
+        <Box height={30} />
+        <Box sx={{ display: 'flex' }}>
+          <Sidenav />
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <AllWorkersList />
+          </Box>
+        </Box>
+      </div>
     </>
   );
 };
 
-export default allWorkers;
+export default AllWorkers;

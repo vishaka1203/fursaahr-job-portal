@@ -97,11 +97,11 @@ export default function Sidenav() {
             { text: 'Branches', icon: <BusinessIcon />, path: '/' },
             { text: 'Invoices', icon: <ReceiptIcon />, path: '/invoices' },
             { text: 'All Workers', icon: <GroupIcon />, path: '/allWorkers' },
-            {
-              text: 'All Requests',
-              icon: <RequestPageIcon />,
-              path: '/allRequests',
-            },
+            // {
+            //   text: 'All Requests',
+            //   icon: <RequestPageIcon />,
+            //   path: '/allRequests',
+            // },
           ].map((item, index) => (
             <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton

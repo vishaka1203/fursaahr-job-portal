@@ -6,12 +6,15 @@ import Navbar from './../Components/Navbar';
 const allRequests = () => {
   return (
     <>
-      <Navbar />
-      <Box sx={{ display: 'flex' }}>
-        <Sidenav />
-        <h1> all Requests</h1>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
-      </Box>
+      <div className="bgco">
+        <Navbar />
+        <Box height={30} />
+        <Box sx={{ display: 'flex' }}>
+          <Sidenav />
+
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
+        </Box>
+      </div>
     </>
   );
 };

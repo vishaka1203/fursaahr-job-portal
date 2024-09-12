@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReceiptIcon from '@mui/icons-material/Receipt';
+import DataTable from './../../Components/DataTable';
+import AddBranch from './addBranch';
 
 const columns = [
   { id: 'branchName', label: 'Branch Name', minWidth: 170 },
@@ -55,8 +54,7 @@ function createData(branch) {
 
 export default function BranchList() {
   const [rows, setRows] = useState([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [openAddBranch, setOpenAddBranch] = useState(false); // State for dialog
 
   useEffect(() => {
     fetch('https://feedle.in/fursaahr/api/getbranches.php')
@@ -72,68 +70,32 @@ export default function BranchList() {
       .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  // Function to handle opening the Add Branch dialog
+  const handleOpenAddBranch = () => {
+    setOpenAddBranch(true);
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
+  // Function to handle closing the Add Branch dialog
+  const handleCloseAddBranch = () => {
+    setOpenAddBranch(false);
   };
 
   return (
-    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-      <Typography
-        gutterBottom
-        variant="h5"
-        component="div"
-        sx={{ padding: '20px', fontWeight: 'bold' }}
-      >
-        Branches
-      </Typography>
-      <Divider />
-      <TableContainer sx={{ maxHeight: 440 }}>
-        <Table stickyHeader aria-label="sticky table">
-          <TableHead>
-            <TableRow>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align={column.align}
-                  style={{ minWidth: column.minWidth }}
-                >
-                  {column.label}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row, index) => (
-                <TableRow hover role="checkbox" tabIndex={-1} key={index}>
-                  {columns.map((column) => {
-                    const value = row[column.id];
-                    return (
-                      <TableCell key={column.id} align={column.align}>
-                        {value}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[5, 10, 25]}
-        component="div"
-        count={rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-    </Paper>
+    <div>
+      <Button variant="contained" color="primary" onClick={handleOpenAddBranch}>
+        + Add Branch
+      </Button>
+      <DataTable columns={columns} rows={rows} title="Branches" />
+
+      <Dialog open={openAddBranch} onClose={handleCloseAddBranch}>
+        <DialogTitle>Add New Branch</DialogTitle>
+        <DialogContent>
+          <AddBranch onClose={handleCloseAddBranch} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddBranch}>Cancel</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 }
