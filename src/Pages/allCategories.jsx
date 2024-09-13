@@ -6,12 +6,14 @@ import Navbar from './../Components/Navbar';
 const allCategories = () => {
   return (
     <>
-      <Navbar />
-      <Box sx={{ display: 'flex' }}>
-        <Sidenav />
-        <h1>All Categories</h1>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
-      </Box>
+      <div className="bgcolor">
+        <Navbar />
+        <Box sx={{ display: 'flex' }}>
+          <Sidenav />
+          <h1>All Categories</h1>
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
+        </Box>
+      </div>
     </>
   );
 };
