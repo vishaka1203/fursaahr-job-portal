@@ -12,7 +12,7 @@ import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
 import { Box } from '@mui/material';
 
-function DataTable({ columns, rows, title, button, onButtonClick }) {
+function DataTable({ columns, rows, title, button, dropdown, onButtonClick }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -29,34 +29,32 @@ function DataTable({ columns, rows, title, button, onButtonClick }) {
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <Box
         sx={{
-          padding: '10px 15px', // Reduced padding around title and button
+          padding: '10px 15px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        <Typography
-          variant="h6" // Changed to a smaller font size for a more compact appearance
-          component="div"
-          sx={{ fontWeight: 'bold' }}
-        >
+        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
           {title}
         </Typography>
-        {button && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={onButtonClick}
-            size="small" // Reduced button size for a more compact look
-          >
-            {button.text}
-          </Button>
-        )}
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {dropdown && <Box>{dropdown}</Box>}
+          {button && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={onButtonClick}
+              size="small"
+            >
+              {button.text}
+            </Button>
+          )}
+        </Box>
       </Box>
       <Divider />
       <TableContainer sx={{ maxHeight: 280 }}>
-        {' '}
-        {/* Reduced maxHeight for a smaller table */}
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
@@ -66,8 +64,8 @@ function DataTable({ columns, rows, title, button, onButtonClick }) {
                   align={column.align}
                   sx={{
                     minWidth: column.minWidth,
-                    padding: '6px 10px', // Reduced padding inside table cells
-                    fontSize: '0.875rem', // Slightly smaller font size for compactness
+                    padding: '6px 10px',
+                    fontSize: '0.875rem',
                   }}
                 >
                   {column.label}
@@ -84,7 +82,7 @@ function DataTable({ columns, rows, title, button, onButtonClick }) {
                     <TableCell
                       key={column.id}
                       align={column.align}
-                      sx={{ padding: '6px 10px' }} // Reduced padding inside table cells
+                      sx={{ padding: '6px 10px' }}
                     >
                       {row[column.id]}
                     </TableCell>
@@ -103,8 +101,8 @@ function DataTable({ columns, rows, title, button, onButtonClick }) {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         sx={{
-          padding: '8px 16px', // Reduced padding in pagination
-          fontSize: '0.875rem', // Smaller font for a more compact look
+          padding: '8px 16px',
+          fontSize: '0.875rem',
         }}
       />
     </Paper>
