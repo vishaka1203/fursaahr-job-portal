@@ -17,6 +17,7 @@ import {
   Alert,
   DialogContentText,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const columns = [
   { id: 'branchName', label: 'Branch Name', minWidth: 170 },
@@ -33,16 +34,34 @@ function createData(
   branch,
   handleEditClick,
   handleDeleteClick,
-  handleViewInvoiceClick
+  handleViewInvoiceClick,
+  branchData,
+  navigate
 ) {
+  const handleViewUserClick = (branchData) => {
+    fetch('https://feedle.in/fursaahr/api/get_user_by_branchid.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ branchid: branchData.branchid }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          const branchId = branchData.branchid;
+          navigate(`/users/${branchId}`);
+        } else {
+          console.error('Expected array but received:', data);
+        }
+      });
+  };
+
   return {
     branchName: branch.branchname,
     address1: branch.address1,
     address2: branch.address2,
     area: branch.area,
-    block: branch.block,
     viewUsers: (
-      <IconButton>
+      <IconButton onClick={() => handleViewUserClick(branch)}>
         <VisibilityIcon />
       </IconButton>
     ),
@@ -73,7 +92,7 @@ export default function BranchList() {
   const [address1, setAddress1] = useState('');
   const [address2, setAddress2] = useState('');
   const [area, setArea] = useState('');
-  const [block, setblock] = useState(''); // Ensure it's an empty string
+  const [block, setBlock] = useState('');
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
@@ -82,26 +101,39 @@ export default function BranchList() {
   const [invoices, setInvoices] = useState([]);
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
 
+  const navigate = useNavigate(); // React Router's useNavigate hook
+
   useEffect(() => {
-    fetch('https://feedle.in/fursaahr/api/getbranches.php')
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchBranches = async () => {
+      try {
+        const response = await fetch(
+          'https://feedle.in/fursaahr/api/getbranches.php'
+        );
+        const data = await response.json();
+        console.log(data);
         if (data.success && Array.isArray(data.data)) {
+          const branchData = data.data;
           const formattedRows = data.data.map((branch) =>
             createData(
               branch,
               handleEditClick,
               handleDeleteClick,
-              handleViewInvoiceClick
+              handleViewInvoiceClick,
+              branchData,
+              navigate
             )
           );
           setRows(formattedRows);
         } else {
           console.error('Expected array but received:', data);
         }
-      })
-      .catch((error) => console.error('Error fetching data:', error));
-  }, []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchBranches();
+  }, [navigate]);
 
   const handleAddBranchClick = () => {
     setEditMode(false);
@@ -119,7 +151,7 @@ export default function BranchList() {
     setAddress1('');
     setAddress2('');
     setArea('');
-    setblock(''); // Ensure block is cleared
+    setBlock('');
     setSelectedBranchId(null);
   };
 
@@ -134,7 +166,7 @@ export default function BranchList() {
     setAddress1(branch.address1);
     setAddress2(branch.address2);
     setArea(branch.area);
-    setblock(branch.block);
+    setBlock(branch.block);
     setOpen(true);
   };
 
@@ -181,7 +213,28 @@ export default function BranchList() {
   };
 
   const handleSave = () => {
-    if (typeof block !== 'string' || !block.trim()) {
+    if (!branchName.trim()) {
+      setSnackbarMessage('Branch Name is required!');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (!address1.trim()) {
+      setSnackbarMessage('Address 1 is required!');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (!area.trim()) {
+      setSnackbarMessage('Area is required!');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    if (!block.trim()) {
       setSnackbarMessage('Block Name cannot be empty!');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
@@ -238,7 +291,7 @@ export default function BranchList() {
     fetch('https://feedle.in/fursaahr/api/get_all_invoices_by_branchid.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ branchId: branch.id }),
+      body: JSON.stringify({ branchid: branch.id }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -269,46 +322,47 @@ export default function BranchList() {
       <DataTable
         columns={columns}
         rows={rows}
-        title="Branches"
-        button={{ text: 'Add Branch +' }}
-        onButtonClick={handleAddBranchClick}
+        title="Branch List"
+        onAddClick={handleAddBranchClick}
       />
-
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{editMode ? 'Edit Branch' : 'Add Branch'}</DialogTitle>
         <DialogContent>
-          <Box display="flex" flexDirection="column" gap={2}>
-            <TextField
-              label="Branch Name"
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Address 1"
-              value={address1}
-              onChange={(e) => setAddress1(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Address 2"
-              value={address2}
-              onChange={(e) => setAddress2(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Area"
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Block"
-              value={block}
-              onChange={(e) => setblock(e.target.value)}
-              fullWidth
-            />
-          </Box>
+          <TextField
+            label="Branch Name"
+            fullWidth
+            value={branchName}
+            onChange={(e) => setBranchName(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Address 1"
+            fullWidth
+            value={address1}
+            onChange={(e) => setAddress1(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Address 2"
+            fullWidth
+            value={address2}
+            onChange={(e) => setAddress2(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Area"
+            fullWidth
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+            margin="normal"
+          />
+          <TextField
+            label="Block"
+            fullWidth
+            value={block}
+            onChange={(e) => setBlock(e.target.value)}
+            margin="normal"
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
@@ -324,43 +378,43 @@ export default function BranchList() {
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
       >
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>Delete Branch</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this branch?
+            Are you sure you want to delete this branch? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleDeleteConfirm} color="primary">
+          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
             Delete
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={invoiceDialogOpen}
-        onClose={handleInvoiceDialogClose}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={invoiceDialogOpen} onClose={handleInvoiceDialogClose}>
         <DialogTitle>Invoices</DialogTitle>
         <DialogContent>
-          {invoices.length > 0 ? (
-            <Box>
-              {/* Render your invoices here */}
-              {invoices.map((invoice) => (
-                <Box key={invoice.id}>
-                  <p>{invoice.description}</p>
-                  {/* Add other invoice details as needed */}
+          <Box>
+            {invoices.length > 0 ? (
+              invoices.map((invoice) => (
+                <Box key={invoice.id} mb={2}>
+                  <strong>Invoice ID:</strong> {invoice.id}
+                  <br />
+                  <strong>Date:</strong> {invoice.date}
+                  <br />
+                  <strong>Amount:</strong> {invoice.amount}
+                  <br />
+                  <strong>Status:</strong> {invoice.status}
                 </Box>
-              ))}
-            </Box>
-          ) : (
-            <p>No invoices found.</p>
-          )}
+              ))
+            ) : (
+              <p>No invoices found for this branch.</p>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleInvoiceDialogClose} color="primary">
@@ -374,7 +428,11 @@ export default function BranchList() {
         autoHideDuration={6000}
         onClose={handleSnackbarClose}
       >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+        <Alert
+          onClose={handleSnackbarClose}
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

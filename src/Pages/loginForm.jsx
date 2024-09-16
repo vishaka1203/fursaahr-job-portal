@@ -44,10 +44,13 @@ const LoginForm = () => {
 
     try {
       // Sending POST request with the credentials
-      const response = await axios.post('https://feedle.in/fursaahr/admin/', {
-        mobile: mobileOrEmail,
-        password: password,
-      });
+      const response = await axios.post(
+        'https://feedle.in/fursaahr/api/login.php',
+        {
+          mobile: mobileOrEmail,
+          password: password,
+        }
+      );
 
       if (!response.data.success) {
         setError(response.data.message || 'Login failed');
@@ -59,10 +62,11 @@ const LoginForm = () => {
         Cookies.set('email', response.data.data.emailid);
         Cookies.set('branchId', response.data.data.branchid);
 
+        // Redirect to Admin Dashboard if user is superadmin
         if (response.data.data.usertype === 'superadmin') {
           navigate('/admin');
         } else {
-          navigate('/menu');
+          navigate('/admin'); // Or another route based on user type
         }
       }
     } catch (error) {

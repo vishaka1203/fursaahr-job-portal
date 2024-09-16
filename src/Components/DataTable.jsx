@@ -84,7 +84,9 @@ function DataTable({ columns, rows, title, button, dropdown, onButtonClick }) {
                       align={column.align}
                       sx={{ padding: '6px 10px' }}
                     >
-                      {row[column.id]}
+                      {column.renderCell
+                        ? column.renderCell(row)
+                        : row[column.id]}
                     </TableCell>
                   ))}
                 </TableRow>

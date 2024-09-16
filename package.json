@@ -5,6 +5,8 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/icons-material": "^6.0.2",
     "@mui/material": "^6.0.2",
     "@testing-library/jest-dom": "^5.17.0",
@@ -21,6 +23,7 @@
     "react-qr-code": "^2.0.15",
     "react-router-dom": "^6.26.2",
     "react-scripts": "5.0.1",
+    "recharts": "^2.12.7",
     "save-svg-as-png": "^1.4.17",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
