@@ -13,6 +13,10 @@ import {
   Snackbar,
   Alert,
   DialogContentText,
+  TextField,
+  InputLabel,
+  FormControl,
+  Input,
 } from '@mui/material';
 
 const columns = [
@@ -25,20 +29,12 @@ const columns = [
 function createData(category, handleEditClick, handleDeleteClick) {
   const imageURL = `https://feedle.in/fursaahr/uploads/${category.categoryImg}`;
 
-  // Debugging: Log the image URL to check if it's correctly constructed
-  console.log('Image URL:', imageURL);
-
   return {
     image: (
       <img
         src={imageURL}
         alt={category.category}
-        onError={(e) => {
-          // Error handling: Log if the image cannot load
-          console.error(`Error loading image at ${imageURL}`);
-          e.target.onerror = null; // Prevent infinite loop if fallback fails
-          e.target.src = 'https://via.placeholder.com/50'; // Placeholder image if the actual image fails to load
-        }}
+        onError={handleImageError}
         style={{
           height: '50px',
           width: '50px',
@@ -62,6 +58,11 @@ function createData(category, handleEditClick, handleDeleteClick) {
   };
 }
 
+const handleImageError = (e) => {
+  e.target.onerror = null;
+  e.target.src = 'https://via.placeholder.com/50'; // Fallback image
+};
+
 export default function AllCategoriesList() {
   const [rows, setRows] = useState([]);
   const [open, setOpen] = useState(false);
@@ -72,6 +73,11 @@ export default function AllCategoriesList() {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    arabicName: '',
+    image: null,
+  });
 
   useEffect(() => {
     fetch('https://feedle.in/fursaahr/api/getcategory.php')
@@ -90,7 +96,6 @@ export default function AllCategoriesList() {
   }, []);
 
   const handleAddCategoryClick = () => {
-    setEditMode(false);
     setOpen(true);
     clearForm();
   };
@@ -102,6 +107,11 @@ export default function AllCategoriesList() {
 
   const clearForm = () => {
     setSelectedCategoryId(null);
+    setFormData({
+      name: '',
+      arabicName: '',
+      image: null,
+    });
   };
 
   const handleSnackbarClose = () => {
@@ -111,6 +121,11 @@ export default function AllCategoriesList() {
   const handleEditClick = (category) => {
     setEditMode(true);
     setSelectedCategoryId(category.categoryId);
+    setFormData({
+      name: category.category,
+      arabicName: category.arabicName,
+      image: null,
+    });
     setOpen(true);
   };
 
@@ -125,7 +140,7 @@ export default function AllCategoriesList() {
     fetch('https://feedle.in/fursaahr/api/deletecategory.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: categoryToDelete.categoryId }),
+      body: JSON.stringify({ id: categoryToDelete.categoryId }), // Send categoryId dynamically
     })
       .then((response) => response.json())
       .then((data) => {
@@ -154,32 +169,128 @@ export default function AllCategoriesList() {
       });
   };
 
+  const handleFormChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'image') {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: files[0],
+      }));
+    } else {
+      setFormData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleFormSubmit = () => {
+    const { name, arabicName, image } = formData;
+
+    if (!name || !arabicName || !image) {
+      setSnackbarMessage('All fields are required');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append('category', name);
+    formDataToSend.append('arabicName', arabicName);
+    formDataToSend.append('categoryImg', image);
+
+    const url = editMode
+      ? 'https://feedle.in/fursaahr/api/updatecategory.php'
+      : 'https://feedle.in/fursaahr/api/createcategory.php';
+
+    fetch(url, {
+      method: 'POST',
+      body: formDataToSend,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          setSnackbarMessage(
+            editMode
+              ? 'Category updated successfully'
+              : 'Category created successfully'
+          );
+          setSnackbarSeverity('success');
+          setSnackbarOpen(true);
+          handleClose();
+          setRows((prevRows) => [
+            ...prevRows,
+            createData(data.data, handleEditClick, handleDeleteClick),
+          ]);
+        } else {
+          setSnackbarMessage(`Error: ${data.message}`);
+          setSnackbarSeverity('error');
+          setSnackbarOpen(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+        setSnackbarMessage('An error occurred');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      });
+  };
+
   return (
     <div>
       <DataTable
         columns={columns}
         rows={rows}
-        title="All Categories"
+        title="Category List"
         button={{ text: '+' }}
         onButtonClick={handleAddCategoryClick}
       />
 
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Confirm Deletion</DialogTitle>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>
+          {editMode ? 'Edit Category' : 'Create Category'}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this category?
+            {editMode
+              ? 'Update the category details'
+              : 'Fill in the details to create a new category'}
           </DialogContentText>
+          <Box sx={{ mt: 2 }}>
+            <FormControl fullWidth margin="normal">
+              <InputLabel htmlFor="image">Choose File *</InputLabel>
+              <Input
+                type="file"
+                name="image"
+                id="image"
+                onChange={handleFormChange}
+                required
+              />
+            </FormControl>
+            <TextField
+              name="name"
+              label="Name *"
+              value={formData.name}
+              onChange={handleFormChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <TextField
+              name="arabicName"
+              label="Arabic Name *"
+              value={formData.arabicName}
+              onChange={handleFormChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteConfirm} color="primary">
-            Delete
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleFormSubmit}>
+            {editMode ? 'Update' : 'Create'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -193,6 +304,20 @@ export default function AllCategoriesList() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete this category?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }

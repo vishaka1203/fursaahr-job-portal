@@ -2,6 +2,7 @@ import React from 'react';
 import Sidenav from '../Components/Sidenav';
 import Box from '@mui/material/Box';
 import Navbar from './../Components/Navbar';
+import AllSubCategoriesList from './AllSubCategories/allSubCategoriesList';
 
 const allSubCategories = () => {
   return (
@@ -9,8 +10,10 @@ const allSubCategories = () => {
       <Navbar />
       <Box sx={{ display: 'flex' }}>
         <Sidenav />
-        <h1> allSubCategories</h1>
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
+
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <AllSubCategoriesList />
+        </Box>
       </Box>
     </>
   );
