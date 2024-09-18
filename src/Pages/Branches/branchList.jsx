@@ -98,9 +98,6 @@ export default function BranchList() {
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState(null);
-  const [invoices, setInvoices] = useState([]);
-  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false);
-
   const navigate = useNavigate(); // React Router's useNavigate hook
 
   useEffect(() => {
@@ -110,10 +107,9 @@ export default function BranchList() {
           'https://feedle.in/fursaahr/api/getbranches.php'
         );
         const data = await response.json();
-        console.log(data);
         if (data.success && Array.isArray(data.data)) {
           const branchData = data.data;
-          const formattedRows = data.data.map((branch) =>
+          const formattedRows = branchData.map((branch) =>
             createData(
               branch,
               handleEditClick,
@@ -161,7 +157,7 @@ export default function BranchList() {
 
   const handleEditClick = (branch) => {
     setEditMode(true);
-    setSelectedBranchId(branch.id);
+    setSelectedBranchId(branch.branchid);
     setBranchName(branch.branchname);
     setAddress1(branch.address1);
     setAddress2(branch.address2);
@@ -181,7 +177,7 @@ export default function BranchList() {
     fetch('https://feedle.in/fursaahr/api/deletebranch.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: branchToDelete.id }),
+      body: JSON.stringify({ id: branchToDelete.branchid }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -287,44 +283,78 @@ export default function BranchList() {
       });
   };
 
-  const handleViewInvoiceClick = async (branch) => {
-    try {
-      const response = await fetch(
-        'https://feedle.in/fursaahr/api/getinvoices.php',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ branchid: branch.branchid }),
-        }
-      );
-      const data = await response.json();
-      if (data.success && Array.isArray(data.data)) {
-        setInvoices(data.data);
-        setInvoiceDialogOpen(true);
-      } else {
-        console.error('Expected array but received:', data);
-      }
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
-    }
-  };
-
-  const handleInvoiceDialogClose = () => {
-    setInvoiceDialogOpen(false);
+  const handleViewInvoiceClick = (branch) => {
+    navigate(`/invoices/${branch.branchid}`);
   };
 
   return (
-    <Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleAddBranchClick}
-        style={{ marginBottom: '1rem' }}
-      >
-        Add Branch
-      </Button>
-      <DataTable columns={columns} rows={rows} />
-      {/* Snackbar for notifications */}
+    <>
+      <Box m={2}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAddBranchClick}
+        >
+          Add Branch
+        </Button>
+        <DataTable rows={rows} columns={columns} />
+      </Box>
+
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{editMode ? 'Edit Branch' : 'Add Branch'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Branch Name"
+            type="text"
+            fullWidth
+            value={branchName}
+            onChange={(e) => setBranchName(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            label="Address 1"
+            type="text"
+            fullWidth
+            value={address1}
+            onChange={(e) => setAddress1(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            label="Address 2"
+            type="text"
+            fullWidth
+            value={address2}
+            onChange={(e) => setAddress2(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            label="Area"
+            type="text"
+            fullWidth
+            value={area}
+            onChange={(e) => setArea(e.target.value)}
+          />
+          <TextField
+            margin="dense"
+            label="Block Name"
+            type="text"
+            fullWidth
+            value={block}
+            onChange={(e) => setBlock(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleSave} color="primary">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -335,99 +365,25 @@ export default function BranchList() {
         </Alert>
       </Snackbar>
 
-      {/* Branch Dialog */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>{editMode ? 'Edit Branch' : 'Add Branch'}</DialogTitle>
-        <DialogContent>
-          <Box component="form" noValidate autoComplete="off">
-            <TextField
-              margin="dense"
-              label="Branch Name"
-              fullWidth
-              variant="standard"
-              value={branchName}
-              onChange={(e) => setBranchName(e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Address 1"
-              fullWidth
-              variant="standard"
-              value={address1}
-              onChange={(e) => setAddress1(e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Address 2"
-              fullWidth
-              variant="standard"
-              value={address2}
-              onChange={(e) => setAddress2(e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Area"
-              fullWidth
-              variant="standard"
-              value={area}
-              onChange={(e) => setArea(e.target.value)}
-            />
-            <TextField
-              margin="dense"
-              label="Block"
-              fullWidth
-              variant="standard"
-              value={block}
-              onChange={(e) => setBlock(e.target.value)}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSave}>Save</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
       >
-        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogTitle>Confirm Delete</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Are you sure you want to delete this branch?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error">
-            Delete
+          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="primary">
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* Invoice Dialog */}
-      <Dialog open={invoiceDialogOpen} onClose={handleInvoiceDialogClose}>
-        <DialogTitle>Invoices</DialogTitle>
-        <DialogContent>
-          {invoices.length > 0 ? (
-            <Box>
-              {invoices.map((invoice) => (
-                <div key={invoice.invoiceid}>
-                  <h3>Invoice ID: {invoice.invoiceid}</h3>
-                  {/* Render more invoice details here if needed */}
-                </div>
-              ))}
-            </Box>
-          ) : (
-            <p>No invoices found for this branch.</p>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleInvoiceDialogClose}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+    </>
   );
 }

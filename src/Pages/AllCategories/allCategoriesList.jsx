@@ -87,6 +87,7 @@ export default function AllCategoriesList() {
           const formattedRows = data.data.map((category) =>
             createData(category, handleEditClick, handleDeleteClick)
           );
+          console.log('Formatted Rows:', formattedRows); // Debug
           setRows(formattedRows);
         } else {
           console.error('Expected array but received:', data);
@@ -140,7 +141,7 @@ export default function AllCategoriesList() {
     fetch('https://feedle.in/fursaahr/api/deletecategory.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: categoryToDelete.categoryId }), // Send categoryId dynamically
+      body: JSON.stringify({ id: categoryToDelete.categoryId }),
     })
       .then((response) => response.json())
       .then((data) => {
@@ -289,8 +290,26 @@ export default function AllCategoriesList() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleFormSubmit}>
+          <Button onClick={handleFormSubmit} variant="contained">
             {editMode ? 'Update' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this category?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteConfirm} color="error">
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
@@ -304,20 +323,6 @@ export default function AllCategoriesList() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          Are you sure you want to delete this category?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm}>Confirm</Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 }

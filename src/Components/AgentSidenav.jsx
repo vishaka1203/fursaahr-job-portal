@@ -3,10 +3,8 @@ import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import MuiDrawer from '@mui/material/Drawer';
 
-import Toolbar from '@mui/material/Toolbar';
 import List from '@mui/material/List';
 import CssBaseline from '@mui/material/CssBaseline';
-import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 
@@ -16,14 +14,11 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import BusinessIcon from '@mui/icons-material/Business';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import GroupIcon from '@mui/icons-material/Group';
 import RequestPageIcon from '@mui/icons-material/RequestPage';
-import CategoryIcon from '@mui/icons-material/Category';
-import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
-import InfoIcon from '@mui/icons-material/Info';
-import { Link } from 'react-router-dom';
+
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 const drawerWidth = 240;
 
@@ -73,7 +68,7 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-export default function Sidenav() {
+export default function AgentSidenav() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
 
@@ -94,57 +89,9 @@ export default function Sidenav() {
         <Divider />
         <List>
           {[
-            { text: 'Branches', icon: <BusinessIcon />, path: '/' },
-            { text: 'Invoices', icon: <ReceiptIcon />, path: '/invoices' },
-            { text: 'All Workers', icon: <GroupIcon />, path: '/allWorkers' },
-            // {
-            //   text: 'All Requests',
-            //   icon: <RequestPageIcon />,
-            //   path: '/allRequests',
-            // },
-          ].map((item, index) => (
-            <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
-                component={Link}
-                to={item.path} // Use Link for navigation
-                sx={[
-                  { minHeight: 48, px: 2.5 },
-                  open
-                    ? { justifyContent: 'initial' }
-                    : { justifyContent: 'center' },
-                ]}
-              >
-                <ListItemIcon
-                  sx={[
-                    { minWidth: 0, justifyContent: 'center' },
-                    open ? { mr: 3 } : { mr: 'auto' },
-                  ]}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  sx={[open ? { opacity: 1 } : { opacity: 0 }]}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {[
-            {
-              text: 'All Categories',
-              icon: <CategoryIcon />,
-              path: '/allCategories',
-            },
-            {
-              text: 'All Sub-Categories',
-              icon: <SubdirectoryArrowRightIcon />,
-              path: '/allSubCategories',
-            },
-            { text: 'App Info', icon: <InfoIcon />, path: '/appInfo' },
-          ].map((item, index) => (
+            { text: 'Invoices', icon: <ReceiptIcon />, path: '/agentinvoice' },
+            { text: 'Workers', icon: <GroupIcon />, path: '/workers' },
+          ].map((item) => (
             <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 component={Link}

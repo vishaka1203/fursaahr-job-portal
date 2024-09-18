@@ -66,7 +66,7 @@ const LoginForm = () => {
         if (response.data.data.usertype === 'superadmin') {
           navigate('/admin');
         } else {
-          navigate('/admin'); // Or another route based on user type
+          navigate('/agent'); // Or another route based on user type
         }
       }
     } catch (error) {

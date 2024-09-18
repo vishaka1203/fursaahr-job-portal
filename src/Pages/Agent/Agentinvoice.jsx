@@ -1,16 +1,16 @@
 import React from 'react';
-import Sidenav from '../Components/Sidenav';
+import Navbar from '../../Components/Navbar';
 import Box from '@mui/material/Box';
-import Navbar from './../Components/Navbar';
+import AgentSidenav from '../../Components/AgentSidenav';
 
-const allRequests = () => {
+const Agentinvoice = () => {
   return (
     <>
-      <div className="bgco">
+      <div className="bgcolor">
         <Navbar />
         <Box height={30} />
         <Box sx={{ display: 'flex' }}>
-          <Sidenav />
+          <AgentSidenav />
 
           <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
         </Box>
@@ -19,4 +19,4 @@ const allRequests = () => {
   );
 };
 
-export default allRequests;
+export default Agentinvoice;

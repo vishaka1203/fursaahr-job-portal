@@ -3,69 +3,60 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { CircularProgress, IconButton, Snackbar, Alert } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Sidenav from '../../../Components/Sidenav';
 import Navbar from '../../../Components/Navbar';
 import DataTable from '../../../Components/DataTable';
 
 export default function UserList() {
-  const { branchId } = useParams(); // Get branchid from URL
+  const { branchId } = useParams();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
   useEffect(() => {
-    console.log(branchId);
-
     fetch('https://feedle.in/fursaahr/api/get_user_by_branchid.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ branchid: branchId }),
     })
-      .then((response) => {
-        const data = response.data;
-        console.log(data);
-        if (data?.success && data?.data) {
+      .then((response) => response.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data?.data)) {
           setUsers(data.data);
         } else {
-          console.error('Expected array but received:', data);
           setSnackbarMessage('Unexpected data format.');
           setOpenSnackbar(true);
         }
       })
-      .catch((error) => {
-        console.error('Error fetching users:', error);
+      .catch(() => {
         setSnackbarMessage('Error fetching users.');
         setOpenSnackbar(true);
       })
       .finally(() => setLoading(false));
   }, [branchId]);
 
-  // Handle View Invoices action
   const handleViewInvoices = (userId) => {
-    console.log(`Fetching invoices for userId: ${userId}`);
     axios
       .post('https://feedle.in/fursaahr/api/view_invoices.php', { userId })
       .then((response) => {
-        const data = response.data;
-        console.log('Invoices data:', data);
-        if (data.success) {
-          // Process and display the invoices data
-          console.log('Invoices data:', data.data);
-          // Further processing or state update can go here
-        } else {
+        if (!response.data.success) {
           setSnackbarMessage('No invoices found.');
           setOpenSnackbar(true);
         }
       })
-      .catch((error) => {
-        console.error('Error fetching invoices:', error);
+      .catch(() => {
         setSnackbarMessage('Error fetching invoices.');
         setOpenSnackbar(true);
       });
   };
 
-  // Define columns for DataTable
+  const handleDeleteUser = (userId) => {
+    // Implement delete logic here
+    console.log(`Deleting userId: ${userId}`);
+  };
+
   const columns = [
     { id: 'username', label: 'Name', minWidth: 100 },
     { id: 'mobile_number', label: 'Mobile', minWidth: 100 },
@@ -78,7 +69,7 @@ export default function UserList() {
       minWidth: 150,
       align: 'center',
       renderCell: (params) => (
-        <IconButton onClick={() => handleViewInvoices(params.row.id)}>
+        <IconButton onClick={() => handleViewInvoices(params.id)}>
           <VisibilityIcon />
         </IconButton>
       ),
@@ -99,9 +90,9 @@ export default function UserList() {
       label: 'Delete',
       minWidth: 100,
       align: 'center',
-      renderCell: () => (
-        <IconButton>
-          <span style={{ fontSize: '1.5rem', color: 'red' }}>🗑️</span>
+      renderCell: (params) => (
+        <IconButton onClick={() => handleDeleteUser(params.id)}>
+          <DeleteIcon style={{ color: 'red' }} />
         </IconButton>
       ),
     },
@@ -111,19 +102,11 @@ export default function UserList() {
 
   return (
     <div>
-      {/* Add Navbar at the top */}
       <Navbar />
-
-      {/* Container with Sidenav and Main Content */}
       <div style={{ display: 'flex' }}>
-        {/* Add Sidenav on the left */}
         <Sidenav />
-
-        {/* Main content on the right */}
         <div style={{ flexGrow: 1, padding: '20px' }}>
           <h2>Users {branchId}</h2>
-
-          {/* Use DataTable */}
           <DataTable
             rows={users}
             columns={columns}
@@ -135,8 +118,6 @@ export default function UserList() {
           />
         </div>
       </div>
-
-      {/* Snackbar for notifications */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
