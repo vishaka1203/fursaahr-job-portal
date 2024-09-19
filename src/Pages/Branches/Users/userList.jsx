@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { CircularProgress, IconButton, Snackbar, Alert } from '@mui/material';
+import {
+  CircularProgress,
+  IconButton,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Button,
+} from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import Sidenav from '../../../Components/Sidenav';
 import Navbar from '../../../Components/Navbar';
 import DataTable from '../../../Components/DataTable';
@@ -14,6 +26,18 @@ export default function UserList() {
   const [loading, setLoading] = useState(true);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [openUserDialog, setOpenUserDialog] = useState(false);
+  const [openCountDialog, setOpenCountDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [newUser, setNewUser] = useState({
+    username: '',
+    mobile_number: '',
+    whatsapp: '',
+    email: '',
+    password: '',
+  });
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
     fetch('https://feedle.in/fursaahr/api/get_user_by_branchid.php', {
@@ -52,9 +76,94 @@ export default function UserList() {
       });
   };
 
-  const handleDeleteUser = (userId) => {
-    // Implement delete logic here
-    console.log(`Deleting userId: ${userId}`);
+  const handleDeleteUser = () => {
+    axios
+      .post('https://feedle.in/fursaahr/api/deleteuser.php', {
+        userid: currentUserId,
+      })
+      .then((response) => {
+        if (response.data.success) {
+          setSnackbarMessage('User deleted successfully.');
+          setUsers(users.filter((user) => user.id !== currentUserId));
+        } else {
+          setSnackbarMessage('Error deleting user.');
+        }
+        setOpenSnackbar(true);
+        setOpenDeleteDialog(false);
+      })
+      .catch(() => {
+        setSnackbarMessage('Error deleting user.');
+        setOpenSnackbar(true);
+      });
+  };
+
+  const handleAddUser = () => {
+    axios
+      .post('https://feedle.in/fursaahr/api/create_user.php', {
+        ...newUser,
+        branchid: branchId,
+      })
+      .then((response) => {
+        if (response.data.success) {
+          setUsers((prev) => [...prev, response.data.newUser]);
+          setSnackbarMessage('User created successfully');
+        } else {
+          setSnackbarMessage('Error creating user');
+        }
+        setOpenSnackbar(true);
+        setOpenUserDialog(false);
+      })
+      .catch(() => {
+        setSnackbarMessage('Error creating user.');
+        setOpenSnackbar(true);
+      });
+  };
+
+  const handleOpenCountDialog = (userId, count) => {
+    if (!userId) return;
+    setCurrentUserId(userId);
+    setPendingCount(count || 0);
+    setOpenCountDialog(true);
+  };
+
+  const handleCloseCountDialog = () => {
+    setOpenCountDialog(false);
+  };
+
+  const handleAddCount = () => {
+    if (currentUserId === null || pendingCount === undefined) {
+      setSnackbarMessage('Invalid data.');
+      setOpenSnackbar(true);
+      return;
+    }
+
+    axios
+      .post('https://feedle.in/fursaahr/api/addcount.php', {
+        userid: currentUserId,
+        count: pendingCount,
+      })
+      .then((response) => {
+        if (response.data.success) {
+          setSnackbarMessage('Count added successfully.');
+          setUsers(
+            users.map((user) =>
+              user.id === currentUserId
+                ? { ...user, pendingcount: pendingCount }
+                : user
+            )
+          );
+        } else {
+          setSnackbarMessage('Failed to add count.');
+        }
+        setOpenSnackbar(true);
+      })
+      .catch(() => {
+        setSnackbarMessage('Error adding count.');
+        setOpenSnackbar(true);
+      })
+      .finally(() => {
+        setOpenCountDialog(false);
+      });
   };
 
   const columns = [
@@ -79,11 +188,16 @@ export default function UserList() {
       label: 'Add Count',
       minWidth: 100,
       align: 'center',
-      renderCell: () => (
-        <IconButton>
-          <span style={{ fontSize: '1.5rem' }}>+</span>
-        </IconButton>
-      ),
+      renderCell: (params) => {
+        const pendingCount = params.row?.pendingcount || 0;
+        return (
+          <IconButton
+            onClick={() => handleOpenCountDialog(params.id, pendingCount)}
+          >
+            <AddIcon />
+          </IconButton>
+        );
+      },
     },
     {
       id: 'delete',
@@ -91,7 +205,12 @@ export default function UserList() {
       minWidth: 100,
       align: 'center',
       renderCell: (params) => (
-        <IconButton onClick={() => handleDeleteUser(params.id)}>
+        <IconButton
+          onClick={() => {
+            setCurrentUserId(params.id);
+            setOpenDeleteDialog(true);
+          }}
+        >
           <DeleteIcon style={{ color: 'red' }} />
         </IconButton>
       ),
@@ -107,23 +226,126 @@ export default function UserList() {
         <Sidenav />
         <div style={{ flexGrow: 1, padding: '20px' }}>
           <h2>Users {branchId}</h2>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenUserDialog(true)}
+            style={{ marginBottom: '20px' }}
+          >
+            Add User+
+          </Button>
           <DataTable
-            rows={users}
+            rows={users.filter((user) => user && user.username)}
             columns={columns}
             title="User List"
-            button={{
-              text: 'Add User+',
-              onClick: () => console.log('Add User clicked'),
-            }}
           />
         </div>
       </div>
+
+      <Dialog open={openUserDialog} onClose={() => setOpenUserDialog(false)}>
+        <DialogTitle>Create User</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            margin="dense"
+            label="User Name"
+            id="username"
+            value={newUser.username}
+            onChange={(e) =>
+              setNewUser({ ...newUser, username: e.target.value })
+            }
+          />
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Mobile Number"
+            id="mobile_number"
+            value={newUser.mobile_number}
+            onChange={(e) =>
+              setNewUser({ ...newUser, mobile_number: e.target.value })
+            }
+          />
+          <TextField
+            fullWidth
+            margin="dense"
+            label="WhatsApp Number"
+            id="whatsapp"
+            value={newUser.whatsapp}
+            onChange={(e) =>
+              setNewUser({ ...newUser, whatsapp: e.target.value })
+            }
+          />
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Email"
+            id="email"
+            value={newUser.email}
+            onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+          />
+          <TextField
+            fullWidth
+            margin="dense"
+            label="Password"
+            id="password"
+            type="password"
+            value={newUser.password}
+            onChange={(e) =>
+              setNewUser({ ...newUser, password: e.target.value })
+            }
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenUserDialog(false)}>Close</Button>
+          <Button onClick={handleAddUser} color="primary">
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={openCountDialog} onClose={handleCloseCountDialog}>
+        <DialogTitle>Add Pending Count</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Pending Count"
+            type="number"
+            fullWidth
+            value={pendingCount}
+            onChange={(e) => setPendingCount(Number(e.target.value))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseCountDialog}>Close</Button>
+          <Button onClick={handleAddCount} color="primary">
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <p>Are you sure you want to delete this user?</p>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
+          <Button onClick={handleDeleteUser} color="primary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={openSnackbar}
         autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity="error">
+        <Alert onClose={() => setOpenSnackbar(false)} severity="info">
           {snackbarMessage}
         </Alert>
       </Snackbar>

@@ -1,13 +1,14 @@
 import React from 'react';
-import Navbar from '../../Components/Navbar';
+
 import Box from '@mui/material/Box';
 import AgentSidenav from '../../Components/AgentSidenav';
+import AgentNavbar from './../../Components/AgentNavbar';
 
 const Agentinvoice = () => {
   return (
     <>
       <div className="bgcolor">
-        <Navbar />
+        <AgentNavbar />
         <Box height={30} />
         <Box sx={{ display: 'flex' }}>
           <AgentSidenav />
