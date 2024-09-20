@@ -225,7 +225,6 @@ export default function UserList() {
       <div style={{ display: 'flex' }}>
         <Sidenav />
         <div style={{ flexGrow: 1, padding: '20px' }}>
-          <h2>Users {branchId}</h2>
           <Button
             variant="contained"
             color="primary"
@@ -313,7 +312,11 @@ export default function UserList() {
             type="number"
             fullWidth
             value={pendingCount}
-            onChange={(e) => setPendingCount(Number(e.target.value))}
+            onChange={(e) => {
+              const value = Math.max(0, Number(e.target.value)); // Ensures count is non-negative
+              setPendingCount(value);
+            }}
+            InputProps={{ inputProps: { min: 0 } }} // Enforces non-negative input
           />
         </DialogContent>
         <DialogActions>

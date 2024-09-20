@@ -94,7 +94,7 @@ export default function Sidenav() {
         <Divider />
         <List>
           {[
-            { text: 'Branches', icon: <BusinessIcon />, path: '/' },
+            { text: 'Branches', icon: <BusinessIcon />, path: '/Branch' },
             { text: 'Invoices', icon: <ReceiptIcon />, path: '/invoices' },
             { text: 'All Workers', icon: <GroupIcon />, path: '/allWorkers' },
             // {

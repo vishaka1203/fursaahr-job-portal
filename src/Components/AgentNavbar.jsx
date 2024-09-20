@@ -12,7 +12,7 @@ export default function AgentNavbar() {
   const navigate = useNavigate(); // Initialize navigation
 
   const handleLoginClick = () => {
-    navigate('/login'); // Navigate to the login page when the "Login" button is clicked
+    navigate('/'); // Navigate to the login page when the "Login" button is clicked
   };
 
   return (

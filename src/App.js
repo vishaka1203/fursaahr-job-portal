@@ -11,20 +11,22 @@ import AdminDashboard from './Pages/Dashboard/adminDashboard';
 import UserList from './Pages/Branches/Users/userList';
 import Agentinvoice from './Pages/Agent/Agentinvoice';
 import ViewInvoice from './Pages/Branches/viewInvoice';
-
 import AgentDashboard from './Pages/Dashboard/agentDashboard';
+import InvoicePage from './Pages/InvoicePage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" exact element={<Branches />}></Route>
+        <Route path="/" exact element={<Loginform />}></Route>
+        <Route path="/Branch" exact element={<Branches />}></Route>
         <Route path="/users/:branchId" element={<UserList />} />
         <Route path="/invoices/:branchId" element={<ViewInvoice />} />
-        <Route path="/login" element={<Loginform />} />
+
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/agent" element={<AgentDashboard />} />
         <Route path="/invoices" exact element={<Invoices />}></Route>
+        <Route path="/invoicepage" exact element={<InvoicePage />}></Route>
         <Route path="/allWorkers" exact element={<AllWorkers />}></Route>
         <Route path="/allCategories" exact element={<AllCategories />}></Route>
         <Route

@@ -6,13 +6,14 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import { useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
   const navigate = useNavigate(); // Initialize navigation
 
   const handleLoginClick = () => {
-    navigate('/login'); // Navigate to the login page when the "Login" button is clicked
+    // navigate('/login'); // Navigate to the login page when the "Login" button is clicked
+    navigate('/');
   };
 
   return (

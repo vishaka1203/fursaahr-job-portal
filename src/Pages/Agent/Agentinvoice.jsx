@@ -4,6 +4,8 @@ import Box from '@mui/material/Box';
 import AgentSidenav from '../../Components/AgentSidenav';
 import AgentNavbar from './../../Components/AgentNavbar';
 
+import AgentInvoiceList from './AgentInvoice/agentInvoiceList';
+
 const Agentinvoice = () => {
   return (
     <>
@@ -13,7 +15,9 @@ const Agentinvoice = () => {
         <Box sx={{ display: 'flex' }}>
           <AgentSidenav />
 
-          <Box component="main" sx={{ flexGrow: 1, p: 3 }}></Box>
+          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+            <AgentInvoiceList />
+          </Box>
         </Box>
       </div>
     </>
